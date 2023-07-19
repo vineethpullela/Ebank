@@ -18,6 +18,7 @@ class LoginPage extends Component {
   onSubmitSuccess = jwtToken => {
     const {history} = this.props
     Cookies.set('jwt_token', jwtToken, {expires: 30})
+    this.setState({showSubmitError: false})
     history.replace('/')
   }
 
@@ -28,11 +29,10 @@ class LoginPage extends Component {
   submitToLogin = async event => {
     event.preventDefault()
     const {userId, userPin} = this.state
-    const userDetails = {userId, userPin}
+    const userDetails = {user_id: userId, pin: userPin}
 
     const url = 'https://apis.ccbp.in/ebank/login'
     const options = {
-      mode: 'cors',
       method: 'POST',
       body: JSON.stringify(userDetails),
     }
@@ -40,6 +40,7 @@ class LoginPage extends Component {
     const response = await fetch(url, options)
     const data = await response.json()
     if (response.ok === true) {
+      console.log(data.jwt_token)
       this.onSubmitSuccess(data.jwt_token)
     } else {
       this.onSubmitError(data.error_msg)
@@ -49,7 +50,7 @@ class LoginPage extends Component {
   render() {
     const {userId, userPin, showSubmitError, errorMsg} = this.state
     const jwtToken = Cookies.get('jwt_token')
-    console.log(jwtToken)
+
     if (jwtToken !== undefined) {
       return <Redirect to="/" />
     }
@@ -67,12 +68,12 @@ class LoginPage extends Component {
           <form className="form-container" onSubmit={this.submitToLogin}>
             <h1 className="form-heading">Welcome Back!</h1>
             <div className="input-container">
-              <label htmlFor="id" className="label">
+              <label htmlFor="userId" className="label">
                 User ID
               </label>
               <input
                 type="text"
-                id="id"
+                id="userId"
                 className="input"
                 value={userId}
                 placeholder="Enter User ID"
@@ -80,12 +81,12 @@ class LoginPage extends Component {
               />
             </div>
             <div className="input-container">
-              <label htmlFor="pin" className="label">
+              <label htmlFor="userPin" className="label">
                 PIN
               </label>
               <input
                 type="password"
-                id="pin"
+                id="userPin"
                 className="input"
                 value={userPin}
                 placeholder="Enter PIN"
